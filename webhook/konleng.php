@@ -10,289 +10,467 @@ use paragraph1\phpFCM\Recipient\Topic;
 use Stichoza\GoogleTranslate\TranslateClient;
 use Goutte\Client;
 use GuzzleHttp\Client as GuzzleClient;
+require('Logger.php');
+
+
 $client = new Client();
 $guzzleClient = new GuzzleClient(array(
 	'timeout' => 250,
 ));
 $client->setClient($guzzleClient);
+
+
 //all links
-$crawl_links =  array(
-	// array(
-	// 	'link' => 'http://www.sroulk.com/?page=10&real-estate=apartment-flat-condo#section_mega_search',
-	// 	'href' => '.property__list__item__title > a',
-	// 	'title' => '.basic-info > h2.title',
-	// 	'listing_type' => '.property-cate-price > .lb-cate',
-	// 	'price' => '.property-cate-price > .lb-price',
-	// 	'property_type' => 'apartment',
-	// 	'lat' => '.more-info > .map_lat',
-	// 	'lng' => '.more-info > .map_lng',
-	// 	'province' => '.more-info > li > a > span',
-	// 	'name__phone__email' => '.contact-top > ul > li',
-	// 	'description' => '.location.comment.long-text',
-	// 	'image' => '.img-responsive'
-	// )
-);
-foreach ($crawl_links as $crawl_link){
-	$GLOBALS['crawl_link'] = $crawl_link;
-	$GLOBALS['listings'] = array(
-		'title' => '',
-		'price' => '',
-		'property_type' => $GLOBALS['crawl_link']['property_type'],
-		'listing_type' => '',
-		'description' => '',
-		'phone1' => '',
-		'phone2' => '',
-		'bedrooms' => '',
-		'bathrooms' => '',
-		'images' => '',
-		'province' => '',
-		'lat' => '',
-		'lng' => '',
-		'displayName' => '',
-		'address' => '',
-		'status' => 1,
-		'property_id' => '',
-		'userType' => '',
-		'email' => '',
-		'size' => '',
-		'link' => ''
-	);
-	try{
-		$crawler = $client->request('GET', $GLOBALS['crawl_link']['link']);
+
+//Test Firebase FCM
+// $apiKey = 'AAAAV5-AEaY:APA91bHPK5NO8y3FBybFQCLsqwHiSz1dboL5zly_FQtdPAotf8wiqf22_bojCudraBdDdSZmR2hD-T73JDuleH_v2wwnhTA-Hra0SD_8ujkOsec7rIP_sVhWpeLIYobGig4H9aZr5vKY';
+// $client = new FCMClient();
+// $client->setApiKey($apiKey);
+// $client->injectHttpClient(new \GuzzleHttp\Client());
+
+
+// $message = new Message();
+// $message->addRecipient(new Topic('news'));
+
+// $message->setNotification(new Notification('Konleng - '.'property_type', 'title'))
+// ->setData(array('id' => '000c5b2f-43e8-4f01-b72a-37b3e57965f2'));
+
+// $response = $client->send($message);
+
+// print_r($response);
+
+// exit();
+
+// $crawl_links = array();
+// $url_types = array(
+// 	'house-villa',
+// 	'apartment-flat-condo',
+// 	'land'
+// );
+
+
+// for ($j = 0; $j < count($url_types); $j ++){
+// 	$property_type = '';
+// 	if ($url_types[$j] == 'house-villa'){
+// 		$property_type = 'house';
+// 	}
+// 	if ($url_types[$j] == 'apartment-flat-condo'){
+// 		$property_type = 'apartment';
+// 	}
+// 	if ($url_types[$j] == 'land'){
+// 		$property_type = 'land';
+// 	}
+// 	$crawl_links[] = array(
+// 		'link' => 'http://www.sroulk.com/?page=1&real-estate='.$url_types[$j],
+// 		'href' => '.property__list__item__title > a',
+// 		'title' => '.basic-info > h2.title',
+// 		'listing_type' => '.property-cate-price > .lb-cate',
+// 		'price' => '.property-cate-price > .lb-price',
+// 		'property_type' => $property_type,
+// 		'lat' => '.more-info > .map_lat',
+// 		'lng' => '.more-info > .map_lng',
+// 		'province' => '.more-info > li > a > span',
+// 		'name__phone__email' => '.contact-top > ul > li',
+// 		'description' => '.location.comment.long-text',
+// 		'image' => '.img-responsive'
+// 	);
+// }
+
+
+// $url_types = array(
+// 	'business-shop-commerce',
+// 	'room-sharing'
+// );
+
+
+// for ($j = 0; $j < count($url_types); $j ++){
+// 	$property_type = '';
+	
+// 	if ($url_types[$j] == 'business-shop-commerce'){
+// 		$property_type = 'commercial';
+// 	}
+// 	if ($url_types[$j] == 'room-sharing'){
+// 		$property_type = 'room';
+// 	}
+
+// 	$crawl_links[] = array(
+// 		'link' => 'http://www.sroulk.com/?page=1&real-estate='.$url_types[$j],
+// 		'href' => '.property__list__item__title > a',
+// 		'title' => '.basic-info > h2.title',
+// 		'listing_type' => '.property-cate-price > .lb-cate',
+// 		'price' => '.property-cate-price > .lb-price',
+// 		'property_type' => $property_type,
+// 		'lat' => '.more-info > .map_lat',
+// 		'lng' => '.more-info > .map_lng',
+// 		'province' => '.more-info > li > a > span',
+// 		'name__phone__email' => '.contact-top > ul > li',
+// 		'description' => '.location.comment.long-text',
+// 		'image' => '.img-responsive'
+// 	);
+// }
+
+$crawl_links = array();
+
+$GLOBALS['index_crawl'] = 0;
+
+for ($GLOBALS['index_crawl'] = 0; $GLOBALS['index_crawl'] < count($crawl_links); $GLOBALS['index_crawl'] ++){
+
+	$GLOBALS['crawl_link'] = $crawl_links[$GLOBALS['index_crawl']];
+	
+	
+	$crawler = $client->request('GET', $GLOBALS['crawl_link']['link']);
 		// $GLOBALS['i'] = 0;
-		$links = $crawler->filter($GLOBALS['crawl_link']['href'])->each(function($node_link){
-			$post_link = $node_link->attr('href');
-			$GLOBALS['listings']['link'] = $post_link;
-			
+	$links = $crawler->filter($GLOBALS['crawl_link']['href'])->each(function($node_link){
+		$GLOBALS['listings'] = array(
+			'title' => '',
+			'price' => '',
+			'property_type' => $GLOBALS['crawl_link']['property_type'],
+			'listing_type' => '',
+			'description' => '',
+			'phone1' => '',
+			'phone2' => '',
+			'bedrooms' => '',
+			'bathrooms' => '',
+			'images' => '',
+			'province' => '',
+			'lat' => '',
+			'lng' => '',
+			'displayName' => '',
+			'address' => '',
+			'status' => 1,
+			'property_id' => '',
+			'userType' => '',
+			'email' => '',
+			'size' => '',
+			'link' => ''
+		);
+		$post_link = $node_link->attr('href');
+		$GLOBALS['listings']['link'] = $post_link;
 
-			$link_check_curl = 'http://localhost:5000/konleng-cloud/us-central1/webApi/api/v1/check_link';
-			
-			$link_field = array(
-				'link' => $post_link
-			);
 
-			$ch = curl_init($link_check_curl);
-			curl_setopt_array($ch, array(
-				CURLOPT_POST => TRUE,
-				CURLOPT_RETURNTRANSFER => TRUE,
-				CURLOPT_HTTPHEADER => array(
-					'Content-Type: application/json'
-				),
-				CURLOPT_POSTFIELDS => json_encode($link_field)
-			));
-			$is_link_exist = curl_exec($ch);
-			if($link_check_response === FALSE){
-				die(curl_error($ch));
-			}
-			// print_r($is_link_exist);
+		$link_check_curl = 'https://konleng.com/api/v1/check_link';
+		// $link_check_curl = 'http://localhost:5000/konleng-cloud/us-central1/webApi/api/v1/check_link';
 
-			if ($is_link_exist == 'false'){
-				print_r("Save New Listing");
-				try{
-					$client = new Client();
-					$crawler = $client->request('GET', $post_link);
-					$crawler->filter($GLOBALS['crawl_link']['title'])->each(function ($node) {
+		$link_field = array(
+			'link' => $post_link
+		);
+
+		$ch = curl_init($link_check_curl);
+		curl_setopt_array($ch, array(
+			CURLOPT_POST => TRUE,
+			CURLOPT_RETURNTRANSFER => TRUE,
+			CURLOPT_HTTPHEADER => array(
+				'Content-Type: application/json'
+			),
+			CURLOPT_POSTFIELDS => json_encode($link_field)
+		));
+		$is_link_exist = curl_exec($ch);
+		if($is_link_exist === FALSE){
+			die(curl_error($ch));
+		}
+
+		echo "Check link: ".$GLOBALS['index_crawl']."\n";
+		print_r($GLOBALS['listings']['link'] . " => " . $is_link_exist);
+		echo "\n";
+
+		if ($is_link_exist == 'false'){
+			print_r("Save New Listing");
+			try{
+				$client = new Client();
+				$crawler = $client->request('GET', $post_link);
+				$crawler->filter($GLOBALS['crawl_link']['title'])->each(function ($node) {
 					// echo 'title ';
-						$title = $node->text();
-						$GLOBALS['listings']['title'] = $title;
+					$title = $node->text();
+					$GLOBALS['listings']['title'] = $title;
 
 
-					});
-				}
-				catch(Exception $e){
+				});
+			}
+			catch(Exception $e){
 						//send email
-					print_r('crawl error');
-				}
-				try{
-					$crawler->filter($GLOBALS['crawl_link']['description'])->each(function ($node) {
-						$html = html_entity_decode($node->html());
-						if (strpos($html, '</script>') < 1){
-							if ($node->text() != ''){
-								$description = remove_emoji($node->text());
-								$GLOBALS['listings']['description'] = $description;
-								$bedrooms = 0;
-								$bathrooms = 0;
+				print_r('crawl error');
+			}
+			try{
+				$crawler->filter($GLOBALS['crawl_link']['description'])->each(function ($node) {
+					$html = html_entity_decode($node->html());
+					if (strpos($html, '</script>') < 1){
+						if ($node->text() != ''){
+							$description = remove_emoji($node->text());
+							$GLOBALS['listings']['description'] = remove_emoji($node->html());
+							$bedrooms = 0;
+							$bathrooms = 0;
 
-								preg_match('/(\d+)\s*+bed($|s|room|rooms)/i', $GLOBALS['listings']['title'], $match_bedrooms);
-								$bedrooms = $match_bedrooms[1];
+							preg_match('/(\d+)\s*+bed($|s|room|rooms)/i', $GLOBALS['listings']['title'], $match_bedrooms);
+							if (empty($match_bedrooms)){
 
-								if (empty($match_bedrooms)){
-									preg_match('/(\d+)\s*+bed($|s|room|rooms)/i', $description, $match_bedrooms);
-									$bedrooms = $match_bedrooms[1];
+								preg_match('/(\d+)\s*+bed($|s|room|rooms)/i', $description, $match_desc_bedrooms);
+								if (empty($match_desc_bedrooms)){
+									$bedrooms = 0;
+								}
+								else{
+									$bedrooms = $match_desc_bedrooms[1];	
 								}
 
-								preg_match('/(\d+)\s*+bath($|s|room|rooms)/i', $GLOBALS['listings']['title'], $match_bathrooms);
-								$bathrooms = $match_bathrooms[1];
-
-								if (empty($match_bathrooms)){
-									preg_match('/(\d+)\s*+bath($|s|room|rooms)/i', $description, $match_bathrooms);
-									$bathrooms = $match_bathrooms[1];
-								}
-
-								$GLOBALS['listings']['bedrooms'] = $bedrooms;
-								$GLOBALS['listings']['bathrooms'] = $bathrooms;
 
 							}
+							else{
+								$bedrooms = $match_bedrooms[1];
+							}
+
+
+							preg_match('/(\d+)\s*+bath($|s|room|rooms)/i', $GLOBALS['listings']['title'], $match_bathrooms);
+
+							if (empty($match_bathrooms)){
+								preg_match('/(\d+)\s*+bath($|s|room|rooms)/i', $description, $match_desc_bathrooms);
+								if (empty($match_desc_bathrooms)){
+									$bathrooms = 0;
+								}
+								else{
+									$bathrooms = $match_bathrooms[1];	
+
+								}
+							}
+							else{
+								$bathrooms = $match_bathrooms[1];
+							}
+
+							$GLOBALS['listings']['bedrooms'] = $bedrooms;
+							$GLOBALS['listings']['bathrooms'] = $bathrooms;
+
 						}
-					});
-				}
-				catch(Exception $e){
+					}
+				});
+			}
+			catch(Exception $e){
 						//send email
-					print_r('crawl error');
+				print_r('crawl error');
+			}
+			try{
+				$GLOBALS['images'] = array();
+
+				$image = $crawler->filter($GLOBALS['crawl_link']['image'])->eq(0);
+				$image = $image->attr('src');
+
+				if (strpos($image, 'http') > -1){
+					$image = $image;
 				}
-				try{
-					$GLOBALS['images'] = array();
-					$image = $crawler->filter($GLOBALS['crawl_link']['image'])->each(function($node){
-
-						$image = $node->attr('src');
-						if (strpos($image, 'http') > -1){
-							$image = $image;
-
-						}
-						else{
-							$image = 'http:'.$image;
-						}
-						$GLOBALS['images'][] = $image;
-
-					});
-					$GLOBALS['listings']['images'] = $GLOBALS['images'];
-
-				} catch (Exception $e){
-					print_r('eror image');
+				else{
+					$image = 'http:'.$image;
 				}
 
-				try{
-					$image = $crawler->filter($GLOBALS['crawl_link']['listing_type'])->each(function($node){
-						$listing_type = $node->text();
+				$GLOBALS['images'][] = $image;
 
-						if (strpos($listing_type, 'Rent') !== false) {
-							$listing_type = 'rent';
-						}
-						else{
-							$listing_type = 'sell';
-						}
+				
+
+				// $image = $crawler->filter($GLOBALS['crawl_link']['image'])->each(function($node){
+
+				// 	$image = $node->attr('src');
+				// 	if (strpos($image, 'http') > -1){
+				// 		$image = $image;
+
+				// 	}
+				// 	else{
+				// 		$image = 'http:'.$image;
+				// 	}
+				// 	$GLOBALS['images'][] = $image;
+
+				// });
+				$GLOBALS['listings']['images'] = $GLOBALS['images'];
+
+			} catch (Exception $e){
+				print_r('eror image');
+			}
+
+			try{
+				$image = $crawler->filter($GLOBALS['crawl_link']['listing_type'])->each(function($node){
+					$listing_type = $node->text();
+
+					if (strpos($listing_type, 'Rent') !== false) {
+						$listing_type = 'rent';
+					}
+					else{
+						$listing_type = 'sale';
+					}
 
 
-						$GLOBALS['listings']['listing_type'] = $listing_type;
+					$GLOBALS['listings']['listing_type'] = $listing_type;
 
 
-					});
-				} catch (Exception $e){
-					print_r('eror image');
-				}
+				});
+			} catch (Exception $e){
+				print_r('eror image');
+			}
 
-				try{
-					$image = $crawler->filter($GLOBALS['crawl_link']['price'])->each(function($node){
+			try{
+				$image = $crawler->filter($GLOBALS['crawl_link']['price'])->each(function($node){
 
-						$price = _toInt($node->text());
-						$GLOBALS['listings']['price'] = $price;
+					$price = _toInt($node->text());
+					$GLOBALS['listings']['price'] = $price;
 
-					});
-				} catch (Exception $e){
-					print_r('eror image');
-				}
+				});
+			} catch (Exception $e){
+				print_r('eror image');
+			}
 
 				// echo $GLOBALS['crawl_link']['property_type'];
 				// echo $GLOBALS['crawl_link']['listing_type'];
 
-				try{
-					$GLOBALS['name__phone__email'] = array();
-					$image = $crawler->filter($GLOBALS['crawl_link']['name__phone__email'])->each(function($node){
-						$GLOBALS['name__phone__email'][] = trim($node->text());
-					});
+			try{
+				$GLOBALS['name__phone__email'] = array();
+				$image = $crawler->filter($GLOBALS['crawl_link']['name__phone__email'])->each(function($node){
+					$GLOBALS['name__phone__email'][] = trim($node->text());
+				});
 
-					$displayName = explode('(', $GLOBALS['name__phone__email'][0]);
-					$displayName = trim($displayName[0]);
-					$userType = explode('(', $GLOBALS['name__phone__email'][0]);
-					if (strpos($userType[1], 'Owner') !== false) {
-						$userType = 'owner';
-					}
-					if (strpos($userType[1], 'Agency') !== false) {
-						$userType = 'agency';
-					}
-
-					$phone = $GLOBALS['name__phone__email'][1];
+				$displayName = explode('(', $GLOBALS['name__phone__email'][0]);
+				$displayName = trim($displayName[0]);
+				$userType = explode('(', $GLOBALS['name__phone__email'][0]);
+				if (strpos($userType[1], 'Owner') !== false) {
+					$userType = 'owner';
+				}
+				if (strpos($userType[1], 'Agency') !== false) {
+					$userType = 'agency';
+				}
+				if (count($GLOBALS['name__phone__email']) == 3){
 					$email = $GLOBALS['name__phone__email'][2];
-
-					$GLOBALS['listings']['phone1'] = $phone;
-					$GLOBALS['listings']['email'] = $email;
-					$GLOBALS['listings']['userType'] = $userType;
-					$GLOBALS['listings']['displayName'] = $displayName;
-
-				} catch (Exception $e){
-					print_r('eror phone');
 				}
-
-				try{
-					$GLOBALS['provinces'] = array();
-
-					$image = $crawler->filter($GLOBALS['crawl_link']['province'])->each(function($node){
-
-						$province = $node->text();
-
-						$GLOBALS['provinces'][] = $province;
-
-					});
-					$province = $GLOBALS['provinces'][1];
-					$GLOBALS['listings']['province'] = from_camel_case($province);
-
-				} catch (Exception $e){
-					print_r('eror province');
+				else{
+					$email = $GLOBALS['name__phone__email'][1].'@sroulk.com';
 				}
-				try{
-					$image = $crawler->filter($GLOBALS['crawl_link']['lat'])->each(function($node){
-						$lat = $node->attr('value');
-						$GLOBALS['listings']['lat'] = $lat;
-					});
-				} catch (Exception $e){
-					print_r('eror map');
-				}
-				try{
-					$image = $crawler->filter($GLOBALS['crawl_link']['lng'])->each(function($node){
-						$lng = $node->attr('value');
-						$GLOBALS['listings']['lng'] = $lng;
+				$phone = $GLOBALS['name__phone__email'][1];
 
-					});
-				} catch (Exception $e){
-					print_r('eror map');
-				}
 
-				$url = 'http://localhost:5000/konleng-cloud/us-central1/webApi/api/v1/listings';
+				$GLOBALS['listings']['phone1'] = $phone;
+				$GLOBALS['listings']['email'] = $email;
+				$GLOBALS['listings']['userType'] = $userType;
+				$GLOBALS['listings']['displayName'] = $displayName;
 
-				$fields = $GLOBALS['listings'];
-				$firebase_token = 'Authorization: Bearer fea';
-				$ch = curl_init($url);
-				curl_setopt_array($ch, array(
-					CURLOPT_POST => TRUE,
-					CURLOPT_RETURNTRANSFER => TRUE,
-					CURLOPT_HTTPHEADER => array(
-						$firebase_token,
-						'Content-Type: application/json'
-					),
-					CURLOPT_POSTFIELDS => json_encode($fields)
-				));
-				$response = curl_exec($ch);
-				if($response === FALSE){
-					die(curl_error($ch));
-				}
-				print_r($response);
+			} catch (Exception $e){
+				print_r('eror phone');
 			}
-			else{
-				print_r("Link Exist");
-			// exit();
+
+			try{
+				$GLOBALS['provinces'] = array();
+
+				$image = $crawler->filter($GLOBALS['crawl_link']['province'])->each(function($node){
+
+					$province = $node->text();
+
+					$GLOBALS['provinces'][] = $province;
+
+				});
+				$province = $GLOBALS['provinces'][1];
+				$GLOBALS['listings']['province'] = from_camel_case($province);
+				$GLOBALS['listings']['address'] = $province;
+
+			} catch (Exception $e){
+				print_r('eror province');
 			}
-		});
-}
-catch(Exception $e){
-	print_r('error all crawl');
-}
+			try{
+				$image = $crawler->filter($GLOBALS['crawl_link']['lat'])->each(function($node){
+					$lat = $node->attr('value');
+					$GLOBALS['listings']['lat'] = $lat;
+				});
+			} catch (Exception $e){
+				print_r('eror map');
+			}
+			try{
+				$image = $crawler->filter($GLOBALS['crawl_link']['lng'])->each(function($node){
+					$lng = $node->attr('value');
+					$GLOBALS['listings']['lng'] = $lng;
+
+				});
+			} catch (Exception $e){
+				print_r('eror map');
+			}
+
+			$url = 'https://konleng.com/api/v1/listings';
+			// $url = 'http://localhost:5000/konleng-cloud/us-central1/webApi/api/v1/listings';
+
+			$fields = $GLOBALS['listings'];
+			$firebase_token = 'Authorization: Bearer fea';
+			$ch = curl_init($url);
+			curl_setopt_array($ch, array(
+				CURLOPT_POST => TRUE,
+				CURLOPT_RETURNTRANSFER => TRUE,
+				CURLOPT_HTTPHEADER => array(
+					$firebase_token,
+					'Content-Type: application/json'
+				),
+				CURLOPT_POSTFIELDS => json_encode($fields)
+			));
+			$response = curl_exec($ch);
+			if($response === FALSE){
+				die(curl_error($ch));
+			}
+
+
+
+			print_r($response);
+		}
+		else{
+			print_r("Link Exist");
+			// (exit)();
+		}
+		echo "Good";
+	});
+	echo "TEST";
 
 }
 
-$crawl_links =  array(
-	array(
-		'link' => 'https://www.khmer24.com/en/property/house-for-sale.html',
-		'href' => 'li.item.special-item.top-item > a.border.post',
+
+// $url_types = array(
+// 	'house-for-sale',
+// 	'house-for-rent',
+// 	'landed-properties-for-sale',
+// 	'landed-properties-for-rent',
+// 	'apartment-for-sale',
+// 	'commercial-properties-for-sale',
+// 	'commercial-properties-for-rent',
+// 	'room-for-rent'
+// );
+$crawl_links = array();
+// for ($i = 1000; $i > 0; $i = $i - 50){
+// 	$crawl_links[] = array(
+// 		'link' => 'https://www.khmer24.com/en/property/house-for-sale.html?location=&per_page='.$i,
+// 		'href' => 'li.item > a.border.post',
+// 		'title' => '.item-short-description > h1',
+// 		'price' => '.item-short-description > p.price > b.price',
+// 		'property_type' => '',
+// 		'listing_type' => '',
+// 		'description' => 'p.post-description',
+// 		'phone' => 'li.number>a>.num',
+// 		'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
+// 		'image' => '.img-contain',
+// 		'province' => 'ul.list-unstyled.item-info > li > span',
+// 		'map' => 'a.map_box.btn_showMap',
+// 		'email' => '.profile > a.header',
+// 		'displayName' => '.profile > a.header > .detail > .name',
+// 		'property_id' => 'ul.list-unstyled.item-info > li > span'
+// 	);
+// }
+
+// for ($i = 2000; $i > 600; $i = $i - 50){
+// 	$crawl_links[] = array(
+// 		'link' => 'https://www.khmer24.com/en/property/house-for-rent.html?location=&per_page='.$i,
+// 		'href' => 'li.item > a.border.post',
+// 		'title' => '.item-short-description > h1',
+// 		'price' => '.item-short-description > p.price > b.price',
+// 		'property_type' => '',
+// 		'listing_type' => '',
+// 		'description' => 'p.post-description',
+// 		'phone' => 'li.number>a>.num',
+// 		'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
+// 		'image' => '.img-contain',
+// 		'province' => 'ul.list-unstyled.item-info > li > span',
+// 		'map' => 'a.map_box.btn_showMap',
+// 		'email' => '.profile > a.header',
+// 		'displayName' => '.profile > a.header > .detail > .name'
+// 	);
+// }
+for ($i = 2000; $i > 0; $i = $i - 50){
+	$crawl_links[] = array(
+		'link' => 'https://www.khmer24.com/en/property/landed-properties-for-sale.html?location=&per_page='.$i,
+		'href' => 'li.item > a.border.post',
 		'title' => '.item-short-description > h1',
 		'price' => '.item-short-description > p.price > b.price',
 		'property_type' => '',
@@ -304,343 +482,408 @@ $crawl_links =  array(
 		'province' => 'ul.list-unstyled.item-info > li > span',
 		'map' => 'a.map_box.btn_showMap',
 		'email' => '.profile > a.header',
-		'displayName' => '.profile > a.header > .detail > .name'
-	),
-	// array(
-	// 	'link' => 'https://www.khmer24.com/en/property/house-for-rent.html',
-	// 	'href' => 'li.item.special-item.top-item > a',
-	// 	'title' => 'h1',
-	// 	'price' => 'b.price',
-	// 	'property_type' => '',
-	// 	'listing_type' => '',
-	// 	'description' => 'p.post-description',
-	// 	'phone' => 'li.number>a>.num',
-	// 	'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
-	// 	'image' => '.img-contain',
-	// 	'province' => 'ul.list-unstyled.item-info > li > span',
-	// 	'map' => 'a.map_box.btn_showMap',
-	// 	'displayName_email' => '.user_detail > .name'
-	// ),
-	// array(
-	// 	'link' => 'https://www.khmer24.com/en/property/landed-properties-for-sale.html',
-	// 	'href' => 'li.item.special-item.top-item > a',
-	// 	'title' => 'h1',
-	// 	'price' => 'b.price',
-	// 	'property_type' => '',
-	// 	'listing_type' => '',
-	// 	'description' => 'p.post-description',
-	// 	'phone' => 'li.number>a>.num',
-	// 	'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
-	// 	'image' => '.img-contain',
-	// 	'province' => 'ul.list-unstyled.item-info > li > span',
-	// 	'map' => 'a.map_box.btn_showMap',
-	// 	'displayName_email' => '.user_detail > .name'
-	// ),
-	// array(
-	// 	'link' => 'https://www.khmer24.com/en/property/landed-properties-for-rent.html',
-	// 	'href' => 'li.item.special-item.top-item > a',
-	// 	'title' => 'h1',
-	// 	'price' => 'b.price',
-	// 	'property_type' => '',
-	// 	'listing_type' => '',
-	// 	'description' => 'p.post-description',
-	// 	'phone' => 'li.number>a>.num',
-	// 	'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
-	// 	'image' => '.img-contain',
-	// 	'province' => 'ul.list-unstyled.item-info > li > span',
-	// 	'map' => 'a.map_box.btn_showMap',
-	// 	'displayName_email' => '.user_detail > .name'
-	// ),
-	// array(
-	// 	'link' => 'https://www.khmer24.com/en/property/apartment-for-sale.html',
-	// 	'href' => 'li.item.special-item.top-item > a',
-	// 	'title' => 'h1',
-	// 	'price' => 'b.price',
-	// 	'property_type' => '',
-	// 	'listing_type' => '',
-	// 	'description' => 'p.post-description',
-	// 	'phone' => 'li.number>a>.num',
-	// 	'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
-	// 	'image' => '.img-contain',
-	// 	'province' => 'ul.list-unstyled.item-info > li > span',
-	// 	'map' => 'a.map_box.btn_showMap',
-	// 	'displayName_email' => '.user_detail > .name'
-	// ),
-	// array(
-	// 	'link' => 'https://www.khmer24.com/en/property/apartment-for-rent.html',
-	// 	'href' => 'li.item.special-item.top-item > a',
-	// 	'title' => 'h1',
-	// 	'price' => 'b.price',
-	// 	'property_type' => '',
-	// 	'listing_type' => '',
-	// 	'description' => 'p.post-description',
-	// 	'phone' => 'li.number>a>.num',
-	// 	'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
-	// 	'image' => '.img-contain',
-	// 	'province' => 'ul.list-unstyled.item-info > li > span',
-	// 	'map' => 'a.map_box.btn_showMap',
-	// 	'displayName_email' => '.user_detail > .name'
-	// ),
-	// array(
-	// 	'link' => 'https://www.khmer24.com/en/property/commercial-properties-for-sale.html',
-	// 	'href' => 'li.item.special-item.top-item > a',
-	// 	'title' => 'h1',
-	// 	'price' => 'b.price',
-	// 	'property_type' => '',
-	// 	'listing_type' => '',
-	// 	'description' => 'p.post-description',
-	// 	'phone' => 'li.number>a>.num',
-	// 	'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
-	// 	'image' => '.img-contain',
-	// 	'province' => 'ul.list-unstyled.item-info > li > span',
-	// 	'map' => 'a.map_box.btn_showMap',
-	// 	'displayName_email' => '.user_detail > .name'
-	// ),
-	// array(
-	// 	'link' => 'https://www.khmer24.com/en/property/commercial-properties-for-rent.html',
-	// 	'href' => 'li.item.special-item.top-item > a',
-	// 	'title' => 'h1',
-	// 	'price' => 'b.price',
-	// 	'property_type' => '',
-	// 	'listing_type' => '',
-	// 	'description' => 'p.post-description',
-	// 	'phone' => 'li.number>a>.num',
-	// 	'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
-	// 	'image' => '.img-contain',
-	// 	'province' => 'ul.list-unstyled.item-info > li > span',
-	// 	'map' => 'a.map_box.btn_showMap',
-	// 	'displayName_email' => '.user_detail > .name'
-	// ),
-	// array(
-	// 	'link' => 'https://www.khmer24.com/en/property/room-for-rent.html',
-	// 	'href' => 'li.item.special-item.top-item > a',
-	// 	'title' => 'h1',
-	// 	'price' => 'b.price',
-	// 	'property_type' => '',
-	// 	'listing_type' => '',
-	// 	'description' => 'p.post-description',
-	// 	'phone' => 'li.number>a>.num',
-	// 	'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
-	// 	'image' => '.img-contain',
-	// 	'province' => 'ul.list-unstyled.item-info > li > span',
-	// 	'map' => 'a.map_box.btn_showMap',
-	// 	'displayName_email' => '.user_detail > .name'
-	// )
-);
-foreach ($crawl_links as $crawl_link){
-	$GLOBALS['crawl_link'] = $crawl_link;
-	
-	
-	preg_match("/landed|house|apartment|commercial|room/",$crawl_link['link'], $property_types_matches);
-	$property_type = $property_types_matches[0];
-
-	preg_match("/sale|rent/",$crawl_link['link'], $listing_types_matches);
-	$listing_type = $listing_types_matches[0];
-
-	if ($property_type == 'landed'){
-		$property_type = 'land';
-	}
-
-	$GLOBALS['listings'] = array(
-		'title' => '',
-		'price' => '',
-		'property_type' => $property_type,
-		'listing_type' => $listing_type,
-		'description' => '',
-		'phone1' => '',
-		'phone2' => '',
-		'bedrooms' => '',
-		'bathrooms' => '',
-		'images' => '',
-		'province' => '',
-		'lat' => '',
-		'lng' => '',
-		'displayName' => '',
-		'address' => '',
-		'status' => 1,
-		'property_id' => '',
-		'userType' => '',
-		'email' => '',
-		'size' => '',
-		'link' => ''
+		'displayName' => '.profile > a.header > .detail > .name',
+		'property_id' => 'ul.list-unstyled.item-info > li > span'
 	);
-	try{
-		$crawler = $client->request('GET', $GLOBALS['crawl_link']['link']);
+}
+// for ($i = 450; $i > 0; $i = $i - 50){
+// 	$crawl_links[] = array(
+// 		'link' => 'https://www.khmer24.com/en/property/landed-properties-for-rent.html?location=&per_page='.$i,
+// 		'href' => 'li.item > a.border.post',
+// 		'title' => '.item-short-description > h1',
+// 		'price' => '.item-short-description > p.price > b.price',
+// 		'property_type' => '',
+// 		'listing_type' => '',
+// 		'description' => 'p.post-description',
+// 		'phone' => 'li.number>a>.num',
+// 		'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
+// 		'image' => '.img-contain',
+// 		'province' => 'ul.list-unstyled.item-info > li > span',
+// 		'map' => 'a.map_box.btn_showMap',
+// 		'email' => '.profile > a.header',
+// 		'displayName' => '.profile > a.header > .detail > .name'
+// 	);
+// }
+// for ($i = 450; $i > 0; $i = $i - 50){
+// 	$crawl_links[] = array(
+// 		'link' => 'https://www.khmer24.com/en/property/apartment-for-sale.html?location=&per_page='.$i,
+// 		'href' => 'li.item > a.border.post',
+// 		'title' => '.item-short-description > h1',
+// 		'price' => '.item-short-description > p.price > b.price',
+// 		'property_type' => '',
+// 		'listing_type' => '',
+// 		'description' => 'p.post-description',
+// 		'phone' => 'li.number>a>.num',
+// 		'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
+// 		'image' => '.img-contain',
+// 		'province' => 'ul.list-unstyled.item-info > li > span',
+// 		'map' => 'a.map_box.btn_showMap',
+// 		'email' => '.profile > a.header',
+// 		'displayName' => '.profile > a.header > .detail > .name'
+// 	);
+// }
+for ($i = 2000; $i > 0; $i = $i - 50){
+	$crawl_links[] = array(
+		'link' => 'https://www.khmer24.com/en/property/apartment-for-rent.html?location=&per_page='.$i,
+		'href' => 'li.item > a.border.post',
+		'title' => '.item-short-description > h1',
+		'price' => '.item-short-description > p.price > b.price',
+		'property_type' => '',
+		'listing_type' => '',
+		'description' => 'p.post-description',
+		'phone' => 'li.number>a>.num',
+		'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
+		'image' => '.img-contain',
+		'province' => 'ul.list-unstyled.item-info > li > span',
+		'map' => 'a.map_box.btn_showMap',
+		'email' => '.profile > a.header',
+		'displayName' => '.profile > a.header > .detail > .name',
+		'property_id' => 'ul.list-unstyled.item-info > li > span'
+	);
+}
+// for ($i = 300; $i > 0; $i = $i - 50){
+// 	$crawl_links[] = array(
+// 		'link' => 'https://www.khmer24.com/en/property/commercial-properties-for-sale.html?location=&per_page='.$i,
+// 		'href' => 'li.item > a.border.post',
+// 		'title' => '.item-short-description > h1',
+// 		'price' => '.item-short-description > p.price > b.price',
+// 		'property_type' => '',
+// 		'listing_type' => '',
+// 		'description' => 'p.post-description',
+// 		'phone' => 'li.number>a>.num',
+// 		'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
+// 		'image' => '.img-contain',
+// 		'province' => 'ul.list-unstyled.item-info > li > span',
+// 		'map' => 'a.map_box.btn_showMap',
+// 		'email' => '.profile > a.header',
+// 		'displayName' => '.profile > a.header > .detail > .name'
+// 	);
+// }
+// for ($i = 650; $i > 0; $i = $i - 50){
+// 	$crawl_links[] = array(
+// 		'link' => 'https://www.khmer24.com/en/property/commercial-properties-for-rent.html?location=&per_page='.$i,
+// 		'href' => 'li.item > a.border.post',
+// 		'title' => '.item-short-description > h1',
+// 		'price' => '.item-short-description > p.price > b.price',
+// 		'property_type' => '',
+// 		'listing_type' => '',
+// 		'description' => 'p.post-description',
+// 		'phone' => 'li.number>a>.num',
+// 		'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
+// 		'image' => '.img-contain',
+// 		'province' => 'ul.list-unstyled.item-info > li > span',
+// 		'map' => 'a.map_box.btn_showMap',
+// 		'email' => '.profile > a.header',
+// 		'displayName' => '.profile > a.header > .detail > .name'
+// 	);
+// }
+// for ($i = 100; $i > 0; $i = $i - 50){
+// 	$crawl_links[] = array(
+// 		'link' => 'https://www.khmer24.com/en/property/room-for-rent.html?location=&per_page='.$i,
+// 		'href' => 'li.item > a.border.post',
+// 		'title' => '.item-short-description > h1',
+// 		'price' => '.item-short-description > p.price > b.price',
+// 		'property_type' => '',
+// 		'listing_type' => '',
+// 		'description' => 'p.post-description',
+// 		'phone' => 'li.number>a>.num',
+// 		'bedroom_bathroom' => '.list-unstyled.item-fields > li > div > span',
+// 		'image' => '.img-contain',
+// 		'province' => 'ul.list-unstyled.item-info > li > span',
+// 		'map' => 'a.map_box.btn_showMap',
+// 		'email' => '.profile > a.header',
+// 		'displayName' => '.profile > a.header > .detail > .name'
+// 	);
+// }
 
-		
-		$links = $crawler->filter($GLOBALS['crawl_link']['href'])->each(function($node_link){
-			$post_link = $node_link->attr('href');
-			$GLOBALS['listings']['link'] = $post_link;
+for ($i = 0; $i < count($crawl_links); $i ++){
+	Logger::info('Crawl Links '. $i . ' > '. $crawl_links[$i]['link']);
+}
 
-			$link_check_curl = 'http://localhost:5000/konleng-cloud/us-central1/webApi/api/v1/check_link';
+
+$GLOBALS['index_crawl'] = 0;
+
+for ($GLOBALS['index_crawl'] = 0; $GLOBALS['index_crawl'] < count($crawl_links); $GLOBALS['index_crawl'] ++){
+	$GLOBALS['crawl_link'] = $crawl_links[$GLOBALS['index_crawl']];
+
+	
+	$crawler = $client->request('GET', $GLOBALS['crawl_link']['link']);
+
+	$links = $crawler->filter($GLOBALS['crawl_link']['href'])->each(function($node_link){
 			
-			$link_field = array(
-				'link' => $post_link
-			);
+		preg_match("/landed|house|apartment|commercial|room/",$GLOBALS['crawl_link']['link'], $property_types_matches);
+		$property_type = $property_types_matches[0];
 
-			$ch = curl_init($link_check_curl);
-			curl_setopt_array($ch, array(
-				CURLOPT_POST => TRUE,
-				CURLOPT_RETURNTRANSFER => TRUE,
-				CURLOPT_HTTPHEADER => array(
-					'Content-Type: application/json'
-				),
-				CURLOPT_POSTFIELDS => json_encode($link_field)
-			));
-			$is_link_exist = curl_exec($ch);
-			if($link_check_response === FALSE){
-				die(curl_error($ch));
-			}
+
+		preg_match("/sale|rent/",$GLOBALS['crawl_link']['link'], $listing_types_matches);
+		$listing_type = $listing_types_matches[0];
+
+		if ($property_type == 'landed'){
+			$property_type = 'land';
+		}
+		$GLOBALS['listings'] = array(
+			'title' => '',
+			'price' => '',
+			'property_type' => $property_type,
+			'listing_type' => $listing_type,
+			'description' => '',
+			'phone1' => '',
+			'phone2' => '',
+			'bedrooms' => '',
+			'bathrooms' => '',
+			'images' => '',
+			'province' => '',
+			'lat' => '',
+			'lng' => '',
+			'displayName' => '',
+			'address' => '',
+			'status' => 1,
+			'property_id' => '',
+			'userType' => '',
+			'email' => '',
+			'size' => '',
+			'link' => ''
+		);
+		$post_link = $node_link->attr('href');
+		$GLOBALS['listings']['link'] = $post_link;
+
+
+		$link_check_curl = 'https://konleng.com/api/v1/check_link';
+		// $link_check_curl = 'http://localhost:5000/konleng-cloud/us-central1/webApi/api/v1/check_link';
+
+		$link_field = array(
+			'link' => $post_link
+		);
+
+		$ch = curl_init($link_check_curl);
+		curl_setopt_array($ch, array(
+			CURLOPT_POST => TRUE,
+			CURLOPT_RETURNTRANSFER => TRUE,
+			CURLOPT_HTTPHEADER => array(
+				'Content-Type: application/json'
+			),
+			CURLOPT_POSTFIELDS => json_encode($link_field)
+		));
+		$is_link_exist = curl_exec($ch);
+		if($is_link_exist === FALSE){
+			die(curl_error($ch));
+		}
+		Logger::info('Check link '. $GLOBALS['index_crawl'] . ' > '. $GLOBALS['listings']['link']);
+		
+		// print_r();
+		// echo "\n";
 			// print_r($is_link_exist);
-
-			if ($is_link_exist == 'false'){
-				print_r('Save New Listing');
-
-				try{
-					$client = new Client();
-					$crawler = $client->request('GET', $post_link);
-					$crawler->filter($GLOBALS['crawl_link']['title'])->each(function ($node) {
+		
+		if ($is_link_exist == 'false'){
+			print_r('Save New Listing');
+			echo "\n";
+			try{
+				$client = new Client();
+				$crawler = $client->request('GET', $post_link);
+				$crawler->filter($GLOBALS['crawl_link']['title'])->each(function ($node) {
 					// echo 'title ';
-						$title = $node->text();
-						$GLOBALS['listings']['title'] = $title;
+					$title = $node->text();
+					$GLOBALS['listings']['title'] = $title;
 
-					});
-				}
-				catch(Exception $e){
-					print_r('error crawl 1');
-				}
-				try{
-					$crawler->filter($GLOBALS['crawl_link']['description'])->each(function ($node) {
-						$html = html_entity_decode($node->html());
-						if (strpos($html, '</script>') < 1){
-							if ($node->text() != ''){
-								$description = remove_emoji($node->text());
+				});
+			}
+			catch(Exception $e){
+				print_r('error crawl 1');
+			}
+			try{
+				$crawler->filter($GLOBALS['crawl_link']['description'])->each(function ($node) {
+					$html = html_entity_decode($node->html());
+					if (strpos($html, '</script>') < 1){
+						if ($node->text() != ''){
+								// $description = remove_emoji($node->text());
 
-								$description = strpos($description, "សំរាប់ពត៌មានបន្ថែមសូមទូរសព្ទ័មកលេខ") ? substr($description, 0, strpos($description, "សំរាប់ពត៌មានបន្ថែមសូមទូរសព្ទ័មកលេខ")) : $description; 
+								// $description = strpos($description, "សំរាប់ពត៌មានបន្ថែមសូមទូរសព្ទ័មកលេខ") ? substr($description, 0, strpos($description, "សំរាប់ពត៌មានបន្ថែមសូមទូរសព្ទ័មកលេខ")) : $description; 
 
-								$GLOBALS['listings']['description'] = $description;
-							}
+								// $description = strpos($description, "ទំនាក់ទំនងលេខទូសព្ទ័") ? substr($description, 0, strpos($description, "ទំនាក់ទំនងលេខទូសព្ទ័")) : $description;
+
+							$description = remove_emoji($node->html());
+							$description = strpos($description, "<span") ? substr($description, 0, strpos($description, "<span")) : $description; 
+
+							$GLOBALS['listings']['description'] = $description;
+								// print_r($GLOBALS['listings']['description'] );
+								// exit();
 						}
-					});
-				}
-				catch(Exception $e){
+					}
+				});
+			}
+			catch(Exception $e){
 						//send email
-					print_r('crawl error');
+				print_r('crawl error');
+			}
+			
+			// print_r($image->attr('src'));
+			
+			try{
+				$GLOBALS['images'] = array();
+
+
+
+				if (!empty($image = $crawler->filter($GLOBALS['crawl_link']['image']))){
+					if (!empty($image->eq(0))){
+						
+						$image = $crawler->filter($GLOBALS['crawl_link']['image'])->each(function($node){
+							$image = $node->attr('src');
+							if (strpos($image, 'http') > -1){
+								$image = $image;
+
+							}
+							else{
+								$image = 'http:'.$image;
+							}
+
+							$GLOBALS['images'][] = $image;
+
+						});
+
+						$GLOBALS['listings']['images'] = array_splice($GLOBALS['images'], 0, 4);
+						// $image = $image->attr('src');
+
+						// if (strpos($image, 'http') > -1){
+						// 	$image = $image;
+						// }
+						// else{
+						// 	$image = 'http:'.$image;
+						// }
+						
+						// $GLOBALS['images'][] = $image;
+
+						// $GLOBALS['listings']['images'] = $GLOBALS['images'];
+					}
+					else{
+						$GLOBALS['listings']['images'] = array();
+						print_r("image not exists");
+					}
 				}
-				try{
-					$GLOBALS['images'] = array();
-					$image = $crawler->filter($GLOBALS['crawl_link']['image'])->each(function($node){
-						$image = $node->attr('src');
-						if (strpos($image, 'http') > -1){
-							$image = $image;
 
-						}
-						else{
-							$image = 'http:'.$image;
-						}
-						$GLOBALS['images'][] = $image;
+				
+				
+				
 
-					});
-					$GLOBALS['listings']['images'] = $GLOBALS['images'];
+			} catch (Exception $e){
+				print_r('error image');
+			}
 
-				} catch (Exception $e){
-					print_r('eror image');
-				}
+			try{
+				$image = $crawler->filter($GLOBALS['crawl_link']['price'])->each(function($node){
+					$price = $node->text();
+					$price = _toInt($node->text());
+					$GLOBALS['listings']['price'] = $price;
 
-				try{
-					$image = $crawler->filter($GLOBALS['crawl_link']['price'])->each(function($node){
-						$price = $node->text();
-						$price = _toInt($node->text());
-						$GLOBALS['listings']['price'] = $price;
-
-					});
-				} catch (Exception $e){
-					print_r('eror image');
-				}
+				});
+			} catch (Exception $e){
+				print_r('error price');
+			}
 
 				// echo $GLOBALS['crawl_link']['property_type'];
 				// echo $GLOBALS['crawl_link']['listing_type'];
 
-				try{
-					$GLOBALS['phones'] = array();
-					$image = $crawler->filter($GLOBALS['crawl_link']['phone'])->each(function($node){
-						$GLOBALS['phones'][] = $node->text();
-					});
+			try{
+				$GLOBALS['phones'] = array();
+				$image = $crawler->filter($GLOBALS['crawl_link']['phone'])->each(function($node){
+					$GLOBALS['phones'][] = $node->text();
+				});
 
-					$GLOBALS['phones'] = array_unique($GLOBALS['phones']);
-					$GLOBALS['listings']['phone1'] = $GLOBALS['phones'][0];
-					if ($GLOBALS['phones'][1]){
-						$GLOBALS['listings']['phone2'] = $GLOBALS['phones'][1];	
-					}
-				} catch (Exception $e){
-					print_r('eror phone');
+				$GLOBALS['phones'] = array_unique($GLOBALS['phones']);
+				$GLOBALS['listings']['phone1'] = $GLOBALS['phones'][0];
+				if (count($GLOBALS['phones']) == 2){
+					$GLOBALS['listings']['phone2'] = $GLOBALS['phones'][1];	
 				}
+			} catch (Exception $e){
+				print_r('eror phone');
+			}
 
-				try{
-					$image = $crawler->filter($GLOBALS['crawl_link']['email'])->each(function($node){
-						$GLOBALS['listings']['email'] = explode('/', $node->attr('href'))[4].'@khmer24.com';
-					});
-				} catch (Exception $e){
-					print_r('ERROR Email');
+			try{
+				$image = $crawler->filter($GLOBALS['crawl_link']['email'])->each(function($node){
+					$GLOBALS['listings']['email'] = explode('/', $node->attr('href'))[4].'@khmer24.com';
+				});
+			} catch (Exception $e){
+				print_r('ERROR Email');
+			}
+
+			try{
+				$image = $crawler->filter($GLOBALS['crawl_link']['displayName'])->each(function($node){
+					$GLOBALS['listings']['displayName'] = $node->text();
+				});
+			} catch(Exception $e){
+				print_r('Error Display Name');
+			}
+
+			try{
+				$GLOBALS['bedrooms_bathrooms'] = array();
+				$image = $crawler->filter($GLOBALS['crawl_link']['bedroom_bathroom'])->each(function($node){
+					$GLOBALS['bedrooms_bathrooms'][] = $node->text();
+				});
+
+				if (strpos($GLOBALS['bedrooms_bathrooms'][0], 'Size') !== false) {
+					$GLOBALS['listings']['size'] = $GLOBALS['bedrooms_bathrooms'][1];
 				}
-
-				try{
-					$image = $crawler->filter($GLOBALS['crawl_link']['displayName'])->each(function($node){
-						$GLOBALS['listings']['displayName'] = $node->text();
-					});
-				} catch(Exception $e){
-					print_r('Error Display Name');
-				}
-
-				try{
-					$GLOBALS['bedrooms_bathrooms'] = array();
-					$image = $crawler->filter($GLOBALS['crawl_link']['bedroom_bathroom'])->each(function($node){
-						$GLOBALS['bedrooms_bathrooms'][] = $node->text();
-					});
-
-					if (strpos($GLOBALS['bedrooms_bathrooms'][0], 'Size') !== false) {
-						$GLOBALS['listings']['size'] = $GLOBALS['bedrooms_bathrooms'][1];
-					}
-					else{
+				else{
 						// $bedrooms = explode(':', $GLOBALS['bedrooms_bathrooms'][1]);
 						// $bathrooms = explode(':', $GLOBALS['bedrooms_bathrooms'][3]);
-						$GLOBALS['listings']['bedrooms'] = $GLOBALS['bedrooms_bathrooms'][1];
-						$GLOBALS['listings']['bathrooms'] = $GLOBALS['bedrooms_bathrooms'][3];
-					}
-
-				} catch (Exception $e){
-					print_r('eror bedroom_bathroom');
+					$GLOBALS['listings']['bedrooms'] = $GLOBALS['bedrooms_bathrooms'][1];
+					$GLOBALS['listings']['bathrooms'] = $GLOBALS['bedrooms_bathrooms'][3];
 				}
-				try{
-					$GLOBALS['provinces'] = array();
-					$image = $crawler->filter($GLOBALS['crawl_link']['province'])->each(function($node){
-						$province = $node->text();
-						$GLOBALS['provinces'][] = $province;
 
-					});
-					$province = $GLOBALS['provinces'][3];
-					$GLOBALS['listings']['province'] = from_camel_case($province);
+			} catch (Exception $e){
+				print_r('eror bedroom_bathroom');
+			}
+			try{
+				$GLOBALS['provinces'] = array();
+				$image = $crawler->filter($GLOBALS['crawl_link']['province'])->each(function($node){
+					$province = $node->text();
+					$GLOBALS['provinces'][] = $province;
+
+				});
+				$province = $GLOBALS['provinces'][3];
+				$GLOBALS['listings']['province'] = from_camel_case($province);
+				$GLOBALS['listings']['address'] = $province;
 
 					// print_r($province);
-				} catch (Exception $e){
-					print_r('eror province');
-				}
-				try{
-					$image = $crawler->filter($GLOBALS['crawl_link']['map'])->each(function($node){
-						$map = $node->attr('href');
-						$map = explode('q=', $map)[1];
-						$map = explode('&', $map)[0];
-						$lat = explode(',', $map)[0];
-						$lng = explode(',', $map)[1];
-						$GLOBALS['listings']['lat'] = $lat;
-						$GLOBALS['listings']['lng'] = $lng;
-					});
-				} catch (Exception $e){
-					print_r('eror map');
-				}
+			} catch (Exception $e){
+				print_r('eror province');
+			}
+
+			try{
+				$GLOBALS['property_id'] = array();
+				$image = $crawler->filter($GLOBALS['crawl_link']['property_id'])->each(function($node){
+					$property_id = $node->text();
+					$GLOBALS['property_id'][] = $property_id;
+				});
+
+				$property_id = $GLOBALS['property_id'][1];
+				$GLOBALS['listings']['property_id'] = $property_id;
+
+					// print_r($province);
+			} catch (Exception $e){
+				print_r('eror province');
+			}
+
+			
 
 
-				$url = 'http://localhost:5000/konleng-cloud/us-central1/webApi/api/v1/listings';
+			try{
+				$image = $crawler->filter($GLOBALS['crawl_link']['map'])->each(function($node){
+					$map = $node->attr('href');
+					$map = explode('q=', $map)[1];
+					$map = explode('&', $map)[0];
+					$lat = explode(',', $map)[0];
+					$lng = explode(',', $map)[1];
+					$GLOBALS['listings']['lat'] = $lat;
+					$GLOBALS['listings']['lng'] = $lng;
+				});
+			} catch (Exception $e){
+				print_r('eror map');
+			}
+
+
+			try{
+				$url = 'https://konleng.com/api/v1/listings';
+				// $url = 'http://localhost:5000/konleng-cloud/us-central1/webApi/api/v1/listings';
 
 				$fields = $GLOBALS['listings'];
 				$firebase_token = 'Authorization: Bearer fea';
@@ -658,17 +901,69 @@ foreach ($crawl_links as $crawl_link){
 				if($response === FALSE){
 					die(curl_error($ch));
 				}
+
+				echo "Response: ";
 				print_r($response);
+				echo "\n";
+			}catch(Exception $e){
+				echo "Not Valid - Maybe No Image - Skip";
+				// $image = $crawler->filter($GLOBALS['crawl_link']['image'])->eq(0);
 			}
-			else{
-				print_r('Listing Exists! ');
-			}
-		});
-}
-catch(Exception $e){
-	print_r('error all crawl');
+
+			
+
+				// if ($GLOBALS['total_count'] == count($crawl_links) - 2){
+				// 	$apiKey = 'AAAAV5-AEaY:APA91bHPK5NO8y3FBybFQCLsqwHiSz1dboL5zly_FQtdPAotf8wiqf22_bojCudraBdDdSZmR2hD-T73JDuleH_v2wwnhTA-Hra0SD_8ujkOsec7rIP_sVhWpeLIYobGig4H9aZr5vKY';
+				// 	$client = new FCMClient();
+				// 	$client->setApiKey($apiKey);
+				// 	$client->injectHttpClient(new \GuzzleHttp\Client());
+
+
+				// 	$message = new Message();
+				// 	$message->addRecipient(new Topic('news'));
+
+				// 	$message->setNotification(new Notification('Konleng - '.$GLOBALS['listings']['property_type'], $GLOBALS['listings']['title']))
+				// 	->setData(array('id' => $GLOBALS['listings']['id']));
+
+				// 	$response = $client->send($message);
+				// }
+
+				// $GLOBALS['total_count'] = $GLOBALS['total_count'] + 1;
+
+
+
+		}
+		else{
+			print_r('Listing Exists! ');
+			echo "\n";
+		}
+
+	});
+
+
+
 }
 
+function gen_uuid() {
+	return sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        // 32 bits for "time_low"
+		mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+
+        // 16 bits for "time_mid"
+		mt_rand( 0, 0xffff ),
+
+        // 16 bits for "time_hi_and_version",
+        // four most significant bits holds version number 4
+		mt_rand( 0, 0x0fff ) | 0x4000,
+
+        // 16 bits, 8 bits for "clk_seq_hi_res",
+        // 8 bits for "clk_seq_low",
+        // two most significant bits holds zero and one for variant DCE1.1
+		mt_rand( 0, 0x3fff ) | 0x8000,
+
+        // 48 bits for "node"
+		mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
+	);
 }
 
 function _toInt($str)
@@ -681,7 +976,11 @@ function from_camel_case($input) {
 	foreach ($ret as &$match) {
 		$match = $match == strtoupper($match) ? strtolower($match) : lcfirst($match);
 	}
-	return implode('-', $ret);
+	$province = implode('-', $ret);
+	if ($province == 'kampong-som'){
+		$province = 'preah-sihanouk';
+	}
+	return $province;
 }
 // curl_close($ch);
 function remove_emoji($text){
